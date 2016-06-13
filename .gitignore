@@ -1,0 +1,7 @@
+.DS_STORE
+api/.DS_STORE
+frontend/.DS_STORE
+frontend/node_modules
+frontend/static
+.module-cache
+*.log*
