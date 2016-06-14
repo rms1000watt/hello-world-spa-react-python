@@ -1,6 +1,5 @@
 import './styles.less';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { Link } from 'react-router';
 
 class BasicFooter extends React.Component {
@@ -32,10 +31,10 @@ class BasicFooter extends React.Component {
     return (
       <div style={{position:this.state.position, height:this.props.height}} className="basic-footer-container">
         <div>
-          <Link to="/login">About Company</Link>
-          <Link to="/login">Privacy</Link>
-          <Link to="/login">Terms</Link>
-          <Link to="/login">Help</Link>
+          <Link to="/">About Company</Link>
+          <Link to="/">Privacy</Link>
+          <Link to="/">Terms</Link>
+          <Link to="/">Help</Link>
         </div>
       </div>
     );

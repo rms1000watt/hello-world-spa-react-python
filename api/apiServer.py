@@ -85,6 +85,7 @@ def startServer(config):
 	application = tornado.web.Application([
 		(r'/ping', PingHandler, dict(config=config)),
 		(r'/login', LoginHandler, dict(config=config)),
+		(r'/signup', SignUpHandler, dict(config=config)),
 		(r'/dashboard', DashboardHandler, dict(config=config)),
 		], autoreload=autoReload, **settings)
 
@@ -163,6 +164,48 @@ class LoginHandler(BaseHandler):
 		else:
 			log('LOGIN: FAILURE: BAD_LOGIN_DATA: PASSWORD: %s' %(email))
 			self.write(json.dumps(FailureMessages['BAD_LOGIN_DATA']))
+
+
+class SignUpHandler(BaseHandler):
+	@tornado.web.asynchronous
+	def post(self):
+		try: 
+			payload = json.loads(self.request.body)
+			fname = payload['fname'] if 'fname' in payload else ''
+			lname = payload['lname'] if 'lname' in payload else ''
+			email = payload['email'].lower()
+			password = payload['password']
+		except Exception as e: 
+			log('SIGNUP: FAILURE: BAD_PAYLOAD')
+			self.write(json.dumps(FailureMessages['BAD_PAYLOAD']))
+			self.finish()
+			return
+
+		try: val = self.r.hget('users', email)
+		except Exception as e:
+			log('SIGNUP: FAILURE: NOT_CONNECT_DATASTORE')
+			self.write(json.dumps(FailureMessages['NOT_CONNECT_DATASTORE']))
+			self.finish()
+			return
+
+		if type(val) != type(None):
+			log('SIGNUP: FAILURE: USER_EXISTS: %s' %(email))
+			self.write(json.dumps(FailureMessages['USER_EXISTS']))
+			self.finish()
+			return
+
+		user = {'fname': fname, 'lname': lname, 'email': email, 'password': password}
+		val = self.r.hset('users', email, json.dumps(user))
+		if type(val) == type(None):
+			log('SIGNUP: FAILURE: INTERNAL_ERROR')
+			self.write(json.dumps(FailureMessages['INTERNAL_ERROR']))
+			self.finish()
+			return
+
+		log('SIGNUP: SUCCESS: %s' %(email))
+		self.set_secure_cookie("web_user", json.dumps(user), expires_days=7, version=2)
+		self.write(json.dumps(SuccessMessages['BLANK_SUCCESS']))
+		self.finish()
 
 
 class DashboardHandler(BaseHandler):

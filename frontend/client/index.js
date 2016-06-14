@@ -2,6 +2,7 @@ import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Login from './screens/login/';
+import Signup from './screens/signup/';
 import Wrapper from './components/wrapper/';
 import Dashboard from './screens/dashboard/';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
@@ -32,6 +33,7 @@ class Main extends React.Component {
             <Router onUpdate={() => window.scrollTo(0, 0)} history={browserHistory}>
                 <Route path="/" component={Wrapper}>
                     <Route path="/login" component={Login} />
+                    <Route path="/signup" component={Signup} />
                     <Route path="/dashboard" component={Dashboard} />
                     <IndexRedirect to="/login" />
                 </Route>
