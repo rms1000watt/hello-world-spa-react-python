@@ -58,8 +58,8 @@ class Login extends React.Component {
 										                                              			''                  											;
 		return(
 			<div className="login-container">
-				<div className="header-text">Omnicron</div>
-				<div className="header-detail">Sign in with your Omnicron Account</div>
+				<div className="header-text">Company</div>
+				<div className="header-detail">Sign in with your Company Account</div>
 				<Paper className="login-paper">
 					<div className="login-avatar">
 						<img src="/assets/images/noProfile.png"/>

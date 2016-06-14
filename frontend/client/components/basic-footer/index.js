@@ -32,7 +32,7 @@ class BasicFooter extends React.Component {
     return (
       <div style={{position:this.state.position, height:this.props.height}} className="basic-footer-container">
         <div>
-          <Link to="/login">About Omnicron</Link>
+          <Link to="/login">About Company</Link>
           <Link to="/login">Privacy</Link>
           <Link to="/login">Terms</Link>
           <Link to="/login">Help</Link>
