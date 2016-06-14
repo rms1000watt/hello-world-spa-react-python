@@ -11,9 +11,9 @@ export function getAuthenticated() {
     return Boolean(web_user)
 }
 
-export function ajax(payload, url, successCB, errorCB) {
+export function ajax(method, url, payload, successCB, errorCB) {
     var request = new Request(url, {
-        method: 'POST', 
+        method: method, 
         mode: 'cors', 
         redirect: 'follow',
         credentials: 'include', 

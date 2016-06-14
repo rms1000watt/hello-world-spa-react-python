@@ -138,7 +138,7 @@ class LoginHandler(BaseHandler):
 			self.write(json.dumps(FailureMessages['BAD_PAYLOAD']))
 			return
 
-		try: val = self.r.hget('omnicron', email)
+		try: val = self.r.hget('users', email)
 		except Exception as e:
 			log('LOGIN: FAILURE: NOT_CONNECT_DATASTORE')
 			self.write(json.dumps(FailureMessages['NOT_CONNECT_DATASTORE']))

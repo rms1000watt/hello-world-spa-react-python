@@ -32,7 +32,7 @@ class Login extends React.Component {
 			password: sha256(_password),
 		};
 
-		ajax(payload, url, this.completeLogin, this.completeLogin)
+		ajax('POST', url, payload, this.completeLogin, this.completeLogin)
 	}
 
 	completeLogin = (data) => {
