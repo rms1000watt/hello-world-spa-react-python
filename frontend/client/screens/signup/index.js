@@ -65,8 +65,8 @@ class Signup extends React.Component {
 										                                    	''                  						;
 		return(
 			<div className="signup-container">
-				<div className="header-text">Omnicron</div>
-				<div className="header-detail">Sign up for an Omnicron Account</div>
+				<div className="header-text">Company</div>
+				<div className="header-detail">Sign up for an Company Account</div>
 				<Paper className="signup-paper">
 					<div className="signup-avatar">
 						<img src="/assets/images/noProfile.png"/>
