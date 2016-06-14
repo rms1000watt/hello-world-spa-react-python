@@ -14,6 +14,8 @@ users
 <br/>&nbsp;&nbsp;&nbsp;&nbsp;fred@example.com 
 <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"email":"fred@example.com","password":"sha256hashedpassword2"}
 
+Go to `http://127.0.0.1:3000/signup` to add users.
+
 ## Run
 
 ```

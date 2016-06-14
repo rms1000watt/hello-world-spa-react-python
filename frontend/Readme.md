@@ -11,17 +11,25 @@ Fork of [TJs React Boilerplate](https://github.com/tj/frontend-boilerplate) with
 - [x] [CSS modules](https://github.com/outpunk/postcss-modules)
 - [x] [Rucksack](http://simplaio.github.io/rucksack/docs)
 
-## Setup
+## Install
 
 ```
 $ npm install
 ```
 
-## Running
+## Dev
 
 ```
 $ npm start
 ```
+
+Go to `http://127.0.0.1:3000` to begin.
+
+### Pages
+
+- `http://127.0.0.1:3000/login` 
+- `http://127.0.0.1:3000/signup` 
+- `http://127.0.0.1:3000/dashboard` 
 
 ## Build
 
@@ -31,4 +39,4 @@ $ npm run build
 
 ## Todo
 
-- [ ] Continue
+- [ ] Continue coding out
