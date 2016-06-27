@@ -16,6 +16,7 @@ export function getErrorMessage(errorCode) {
 }
 
 export function setAuthenticated(_authenticated) {
+    // TODO: Possibly remove this. Receiving the cookie header from the ajax should be sufficient for getAuthenticated() 
     authenticated = _authenticated;
 }
 
