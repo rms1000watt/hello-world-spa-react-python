@@ -6,7 +6,7 @@ import { browserHistory } from 'react-router';
 import TextField from 'material-ui/TextField';
 import RaisedButton from 'material-ui/RaisedButton';
 import BasicFooter from '../../components/basic-footer';
-import { BASE_URL, EMAIL_REGEX, setAuthenticated, ajax, getErrorMessage } from '../../globals';
+import { BASE_URL, EMAIL_REGEX, ajax, getErrorMessage } from '../../globals';
 
 class Signup extends React.Component {
 	constructor(props) {
@@ -55,7 +55,6 @@ class Signup extends React.Component {
 			this.setState({
 				errorCode: '',
 			})
-			setAuthenticated(true);
 			browserHistory.push('/dashboard');
 		}
 		else {

@@ -15,11 +15,6 @@ export function getErrorMessage(errorCode) {
     return errorText;
 }
 
-export function setAuthenticated(_authenticated) {
-    // TODO: Possibly remove this. Receiving the cookie header from the ajax should be sufficient for getAuthenticated() 
-    authenticated = _authenticated;
-}
-
 export function getAuthenticated() {
     let web_user = getCookie("web_user");
     return Boolean(web_user)
@@ -43,7 +38,7 @@ export function ajax(method, url, payload, successCB, errorCB) {
     .catch(errorCB)
 }
 
-export function getCookie(name)  {
+function getCookie(name)  {
     var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
     return r ? r[1] : undefined;
 }
