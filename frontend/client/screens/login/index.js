@@ -6,7 +6,7 @@ import { browserHistory } from 'react-router';
 import TextField from 'material-ui/TextField';
 import RaisedButton from 'material-ui/RaisedButton';
 import BasicFooter from '../../components/basic-footer';
-import { PORT, setAuthenticated, ajax } from '../../globals';
+import { BASE_URL, EMAIL_REGEX, setAuthenticated, ajax, getErrorMessage } from '../../globals';
 
 class Login extends React.Component {
 	constructor(props) {
@@ -21,12 +21,23 @@ class Login extends React.Component {
 	}
 
 	onLogin = () => {
-		// TODO: validate first
-		this._onLogin(this.refs.email.getValue(), this.refs.password.getValue()); 
+		let email = this.refs.email.getValue();
+		if (EMAIL_REGEX.exec(email)) {
+			this.setState({
+				errorCode: '',
+			})
+			this._onLogin(
+				email, 
+				this.refs.password.getValue()); 
+		} else {
+			this.setState({
+				errorCode: 'BAD_EMAIL_PROVIDED',
+			})
+		} 
 	}
 
 	_onLogin = (_email, _password) => {
-		let url = 'http://'+ location.hostname + ':' + PORT +'/login';
+		let url = BASE_URL + '/login';
 		let payload = {
 			email: _email,
 			password: sha256(_password),
@@ -51,11 +62,7 @@ class Login extends React.Component {
 	}
 
 	render() {
-		let errorText = this.state.errorCode == 'BAD_PAYLOAD'			      ? 	'Bad data sent to server' 					      :
-										this.state.errorCode == 'BAD_LOGIN_DATA'		    ? 	'Email address or password is incorrect'  :
-										this.state.errorCode == 'INTERNAL_ERROR'		    ? 	'Internal error. Please try again'			  :
-										this.state.errorCode == 'NOT_CONNECT_TO_SERVER'	? 	'Cannot connect to server'					      :
-										                                              			''                  											;
+		let errorText = getErrorMessage(this.state.errorCode);
 		return(
 			<div className="login-container">
 				<div className="header-text">Company</div>
