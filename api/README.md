@@ -16,6 +16,12 @@ users
 
 Go to `http://127.0.0.1:3000/signup` to add users.
 
+## Install
+
+```
+sudo pip install -r requirements.txt
+```
+
 ## Run
 
 ```
