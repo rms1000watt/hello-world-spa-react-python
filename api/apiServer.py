@@ -107,9 +107,10 @@ class BaseHandler(tornado.web.RequestHandler):
 		return self.get_secure_cookie("web_user")
 
 	def set_default_headers(self):
-		# ADDED: Set specific origins so you can use Cookies with CORS
-		# TODO: Generate list dynamically from config.json
-		self.set_header('Access-Control-Allow-Origin', 'http://127.0.0.1:3000')
+		# Be aware of the security risks by doing this
+		origin = self.request.headers.get('Origin')
+		if origin:
+			self.set_header('Access-Control-Allow-Origin', origin)
 		self.set_header('Access-Control-Allow-Credentials', 'true')
 		
 	def options(self, *args, **kwargs):
