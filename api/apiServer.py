@@ -1,13 +1,16 @@
 import os
 import json
+import ryan
 import redis
 import datetime
 import tornado.web
 import tornado.ioloop
 
+r = None
 ENABLE_LOGGING = True
 SCRIPT_LOG_DESCRIPTION = 'AS'
 CWD = os.path.dirname(os.path.abspath(__file__))
+l = ryan.Logger(SCRIPT_LOG_DESCRIPTION, CWD, ENABLE_LOGGING)
 CONFIG_FILE =  CWD + '/config.json'
 
 FailureMessages = {
@@ -61,11 +64,22 @@ SuccessMessages = {
 def main():
 	with open(CONFIG_FILE) as configFile:
 		config = json.load(configFile)
-
 	if config:
+		connected = connectToDB(config)
+	if connected:
 		startServer(config)
-	else:
-		log('FAILURE: Cannot load config')
+	l.log('DONE')
+
+
+def connectToDB(config):
+	global r
+	r = redis.Redis(host=config['redis']['ip'], port=config['redis']['port'], socket_timeout=10)
+	try: r.info()
+	except Exception as e:
+		l.log("Error: %s" %(e.message))
+		l.log("FAILURE: Cannot connect to Redis: %s:%s" %(config['redis']['ip'], config['redis']['port']))
+		return False
+	return True
 
 
 def startServer(config):
@@ -90,7 +104,7 @@ def startServer(config):
 		], autoreload=autoReload, **settings)
 
 	application.listen(int(config['apiServer']['port']), config['apiServer']['ip'])
-	log('Listening on %s:%s' %(config['apiServer']['ip'], config['apiServer']['port']))
+	l.log('Listening on %s:%s' %(config['apiServer']['ip'], config['apiServer']['port']))
 	
 	mainLoop = tornado.ioloop.IOLoop.instance()
 	mainLoop.start()
@@ -99,8 +113,7 @@ def startServer(config):
 class BaseHandler(tornado.web.RequestHandler):
 	def initialize(self, config=None):
 		self.config = config
-		# TODO: Use global connection instead
-		self.r = redis.Redis(host=config['redis']['ip'], port=config['redis']['port'], socket_timeout=10)
+		self.r = r
 
 	def get_current_user(self):
 		# TODO: Validate that user is still authenticated with DB
@@ -136,39 +149,38 @@ class LoginHandler(BaseHandler):
 			email = payload['email'].lower()
 			password = payload['password']
 		except Exception as e: 
-			log('LOGIN: FAILURE: BAD_PAYLOAD')
+			l.log('LOGIN: FAILURE: BAD_PAYLOAD')
 			self.write(json.dumps(FailureMessages['BAD_PAYLOAD']))
 			return
 
 		try: val = self.r.hget('users', email)
 		except Exception as e:
-			log('LOGIN: FAILURE: NOT_CONNECT_DATASTORE')
+			l.log('LOGIN: FAILURE: NOT_CONNECT_DATASTORE')
 			self.write(json.dumps(FailureMessages['NOT_CONNECT_DATASTORE']))
 			return
 
 		if type(val) == type(None):
-			log('LOGIN: FAILURE: BAD_LOGIN_DATA: %s' %(email))
+			l.log('LOGIN: FAILURE: BAD_LOGIN_DATA: %s' %(email))
 			self.write(json.dumps(FailureMessages['BAD_LOGIN_DATA']))
 			return
 
 		try: user = json.loads(val)
 		except Exception as e:
-			log('LOGIN: FAILURE: BAD_DATA_DATASTORE: %s' %(val))
+			l.log('LOGIN: FAILURE: BAD_DATA_DATASTORE: %s' %(val))
 			self.write(json.dumps(FailureMessages['INTERNAL_ERROR']))
 			return
 
 		if user['password'] == password:
-			log('LOGIN: SUCCESS: %s' %(email))
+			l.log('LOGIN: SUCCESS: %s' %(email))
 			# TODO: JWT?
-			self.set_secure_cookie("web_user", json.dumps(user), expires_days=7, version=2)
+			self.set_secure_cookie("web_user", json.dumps({"Email":user['email']}), expires_days=1, version=2)
 			self.write(json.dumps(SuccessMessages['BLANK_SUCCESS']))
 		else:
-			log('LOGIN: FAILURE: BAD_LOGIN_DATA: PASSWORD: %s' %(email))
+			l.log('LOGIN: FAILURE: BAD_LOGIN_DATA: PASSWORD: %s' %(email))
 			self.write(json.dumps(FailureMessages['BAD_LOGIN_DATA']))
 
 
 class SignUpHandler(BaseHandler):
-	@tornado.web.asynchronous
 	def post(self):
 		try: 
 			payload = json.loads(self.request.body)
@@ -177,20 +189,20 @@ class SignUpHandler(BaseHandler):
 			email = payload['email'].lower()
 			password = payload['password']
 		except Exception as e: 
-			log('SIGNUP: FAILURE: BAD_PAYLOAD')
+			l.log('SIGNUP: FAILURE: BAD_PAYLOAD')
 			self.write(json.dumps(FailureMessages['BAD_PAYLOAD']))
 			self.finish()
 			return
 
 		try: val = self.r.hget('users', email)
 		except Exception as e:
-			log('SIGNUP: FAILURE: NOT_CONNECT_DATASTORE')
+			l.log('SIGNUP: FAILURE: NOT_CONNECT_DATASTORE')
 			self.write(json.dumps(FailureMessages['NOT_CONNECT_DATASTORE']))
 			self.finish()
 			return
 
 		if type(val) != type(None):
-			log('SIGNUP: FAILURE: USER_EXISTS: %s' %(email))
+			l.log('SIGNUP: FAILURE: USER_EXISTS: %s' %(email))
 			self.write(json.dumps(FailureMessages['USER_EXISTS']))
 			self.finish()
 			return
@@ -198,12 +210,12 @@ class SignUpHandler(BaseHandler):
 		user = {'fname': fname, 'lname': lname, 'email': email, 'password': password}
 		val = self.r.hset('users', email, json.dumps(user))
 		if type(val) == type(None):
-			log('SIGNUP: FAILURE: INTERNAL_ERROR')
+			l.log('SIGNUP: FAILURE: INTERNAL_ERROR')
 			self.write(json.dumps(FailureMessages['INTERNAL_ERROR']))
 			self.finish()
 			return
 
-		log('SIGNUP: SUCCESS: %s' %(email))
+		l.log('SIGNUP: SUCCESS: %s' %(email))
 		self.set_secure_cookie("web_user", json.dumps(user), expires_days=7, version=2)
 		self.write(json.dumps(SuccessMessages['BLANK_SUCCESS']))
 		self.finish()
@@ -215,28 +227,13 @@ class DashboardHandler(BaseHandler):
 		try: 
 			payload = json.loads(self.request.body)
 		except Exception as e: 
-			log('DASHBOARD: FAILURE: Bad Payload: %s: %s' %(self.request.method, self.request.path))
+			l.log('DASHBOARD: FAILURE: Bad Payload: %s: %s' %(self.request.method, self.request.path))
 			self.write(json.dumps(FailureMessages['BAD_PAYLOAD']))
 			self.finish()
 			return
 
 		self.write(json.dumps(SuccessMessages['BLANK_SUCCESS']))
 		self.finish()
-
-
-def log(msg, toFile=False):
-	line = '[%s] %s: %s' %(getDate(), SCRIPT_LOG_DESCRIPTION, msg)
-	if ENABLE_LOGGING:
-		print line
-	if toFile:
-		fp = '%s\%s.log' %(CWD, SCRIPT_LOG_DESCRIPTION) 
-		with open(fp, 'a') as f:
-			f.write(line)
-			f.write('\r\n')
-
-
-def getDate():
-	return datetime.datetime.now().strftime('%H:%M:%S')
 
 
 if __name__ == '__main__':
