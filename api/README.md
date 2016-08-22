@@ -18,6 +18,12 @@ Go to `http://127.0.0.1:3000/signup` to add users.
 
 ## Install
 
+#### Install Redis (as datastore)
+```
+brew install redis
+```
+
+#### Install Python requirements
 ```
 sudo pip install -r requirements.txt
 ```
@@ -25,9 +31,14 @@ sudo pip install -r requirements.txt
 ## Run
 
 ```
+redis-server
+```
+
+```
 python apiServer.py
 ```
 
 ## Todo:
 
-- [ ] Signup
+- [ ] SQLAlchemy
+- [ ] Async DB requests
